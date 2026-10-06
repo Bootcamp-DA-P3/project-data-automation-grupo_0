@@ -1,0 +1,23 @@
+# Credenciales
+.env
+
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Datos generados: se regeneran ejecutando main.py
+output/*.csv
+
+# Ficheros temporales de Excel
+~$*.xlsx
+
+# Editores
+.vscode/
+.idea/
+.ipynb_checkpoints/
