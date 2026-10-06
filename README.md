@@ -13,14 +13,15 @@ por las vuestras.
 
 ---
 
-## Los cuatro ficheros clave
+## Los ficheros clave
 
-Si solo mirais cuatro cosas, que sean estas.
+Si solo mirais cinco cosas, que sean estas.
 
 | Fichero | Que hace |
 | :--- | :--- |
 | `queries/*.sql` | Las consultas. Es donde se piensa y donde se trabaja de verdad. |
-| `src/olist_ETL.py` | El motor: extrae, comprueba el grano, exporta. |
+| `src/olist_ETL.py` | El motor: extrae, comprueba el grano, limpia, exporta. |
+| `src/limpieza.py` | Donde aterriza vuestra limpieza del Proyecto III. |
 | `src/config.py` | Lee el `.env`. No hay que tocarlo. |
 | `main.py` | El boton de encendido. `python main.py` y ya. |
 
@@ -39,7 +40,8 @@ El resto del ETL no se toca.
 ├── src/
 │   ├── __init__.py
 │   ├── config.py                     lee las credenciales del .env
-│   ├── olist_ETL.py                  extraer, comprobar grano, exportar
+│   ├── olist_ETL.py                  extraer, comprobar grano, limpiar, exportar
+│   ├── limpieza.py                   las reglas de limpieza, una por funcion
 │   └── excel.py                      crea y abre el libro. No lo disena
 │
 ├── queries/                       <- las consultas, una por fichero
@@ -154,6 +156,51 @@ ejecucion y acaba en el dashboard. Mas vale que el proceso se detenga.
 Por eso las cuatro consultas agregan antes de unir. Mirad `clientes_actividad.sql`:
 los pagos se suman por pedido en una CTE y solo despues se unen a `orders`. Si se
 unieran directamente, los pedidos pagados con dos tarjetas contarian dos veces.
+
+---
+
+## La limpieza: que va en SQL y que en Python
+
+Vuestro notebook del Proyecto III no se tira. Cada celda de limpieza se convierte
+en funcion con dos cambios, un `def` arriba y un `return` abajo:
+
+```python
+# Proyecto III, celda suelta
+df = df[df["precio"] > 0]
+df["ciudad"] = df["ciudad"].str.strip()
+
+# Proyecto IV, funcion en src/limpieza.py
+def quitar_precios_a_cero(df):
+    df = df[df["precio"] > 0]
+    df["ciudad"] = df["ciudad"].str.strip()
+    return df
+```
+
+Se registra en `LIMPIEZA`, bajo el dataset al que se aplica, y el ETL la ejecuta
+sola en cada pasada. El notebook importa las mismas funciones, asi que no hay dos
+copias que se puedan desincronizar.
+
+**La regla para decidir donde va cada limpieza:**
+
+| | Donde |
+| :--- | :--- |
+| Un filtro, un valor por defecto, una agregacion | **SQL**, que corre en el servidor y reduce lo que viaja |
+| Necesita el conjunto entero: atipicos, percentiles, medias | **`limpieza.py`** |
+| Manipular texto: tildes, mayusculas, formatos | **`limpieza.py`** |
+| Cualquier cosa | **nunca en Excel**: no se versiona y no se repite |
+
+En Olist casi todo cae del lado de SQL, porque los defectos son estructurales:
+8 pedidos entregados sin fecha, 610 productos sin categoria, 547 pedidos con mas
+de una resena. Un `WHERE`, un `COALESCE` y un `GROUP BY`. Las consultas del repo
+ya los tratan.
+
+La excepcion es `geolocation`, la unica tabla sucia de verdad: 261.831 filas
+duplicadas exactas de 1.000.163, 2.073 ciudades que son la misma escrita con y sin
+tilde, y 42 coordenadas fuera de Brasil. Si la usais para mapas, ahi si entra
+`limpieza.py`.
+
+> Una regla de limpieza se justifica con un numero medido, no con un tutorial.
+> La seccion 3 del notebook es para contar el defecto antes de escribir la regla.
 
 ---
 

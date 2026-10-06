@@ -3,9 +3,11 @@
 Las tres fases del proceso estan separadas a proposito:
     extraer   -> lee el .sql y lo ejecuta contra MySQL
     comprobar -> valida que el resultado tiene el grano declarado
+    limpiar   -> aplica las reglas de src/limpieza.py
     exportar  -> escribe el CSV que consumira Excel
 
-El paso del medio es el que diferencia un ETL de un script que escribe ficheros.
+Las comprobaciones de grano son las que diferencian un ETL de un script que
+escribe ficheros.
 """
 
 from urllib.parse import quote_plus
@@ -13,6 +15,7 @@ from urllib.parse import quote_plus
 import pandas as pd
 from sqlalchemy import create_engine, text
 
+from src.limpieza import limpiar
 from src.config import (
     CARPETA_OUTPUT,
     CARPETA_QUERIES,
@@ -68,20 +71,8 @@ def comprobar_grano(df, clave, nombre):
     if distintos != len(df):
         raise ValueError(
             f"{nombre}: {len(df)} filas para {distintos} valores distintos de '{clave}'. "
-            "Un JOIN esta multiplicando filas. Agregad antes de unir."
+            "Algo esta multiplicando filas: el JOIN del .sql o una regla de limpieza."
         )
-
-
-def transformar(df):
-    """Limpieza minima comun a todas las consultas.
-
-    Lo pesado se hace en SQL, que corre en el servidor. Aqui solo queda lo que
-    SQL no puede dejar listo para Excel.
-    """
-    for columna in df.columns:
-        if columna.startswith("fecha_") or columna.endswith("_compra"):
-            df[columna] = pd.to_datetime(df[columna], errors="coerce")
-    return df
 
 
 def exportar(df, nombre):
@@ -100,8 +91,11 @@ def ejecutar_etl():
 
     for nombre, clave_de_grano in CONSULTAS.items():
         df = extraer(engine, nombre)
-        comprobar_grano(df, clave_de_grano, nombre)
-        df = transformar(df)
+        # Se comprueba dos veces a proposito: la primera senala un JOIN mal
+        # hecho en el .sql, la segunda una limpieza que duplica filas.
+        comprobar_grano(df, clave_de_grano, f"{nombre} (SQL)")
+        df = limpiar(df, nombre)
+        comprobar_grano(df, clave_de_grano, f"{nombre} (tras limpiar)")
         resultados[nombre] = (len(df), exportar(df, nombre))
 
     return resultados
