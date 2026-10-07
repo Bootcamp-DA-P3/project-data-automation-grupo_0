@@ -34,6 +34,8 @@ CONSULTAS = {
     "catalogo_productos": "product_id",
     "vendedores": "seller_id",
     "entregas_retrasos": "order_id",
+    # Tabla de hechos: es la que relaciona a las otras cuatro entre si.
+    "ventas_detalle": "linea_id",
 }
 
 

@@ -59,6 +59,7 @@ LIMPIEZA = {
     "catalogo_productos": [marcar_ingresos_atipicos],
     "vendedores": [],
     "entregas_retrasos": [],
+    "ventas_detalle": [],
 }
 
 # Si algun equipo usa la tabla geolocation, es la unica de Olist que esta

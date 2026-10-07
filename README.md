@@ -22,6 +22,7 @@ Si solo mirais cinco cosas, que sean estas.
 | `queries/*.sql` | Las consultas. Es donde se piensa y donde se trabaja de verdad. |
 | `src/olist_ETL.py` | El motor: extrae, comprueba el grano, limpia, exporta. |
 | `src/limpieza.py` | Donde aterriza vuestra limpieza del Proyecto III. |
+| `dashboard/README.md` | El modelo de datos y como relacionarlo en Excel. |
 | `src/config.py` | Lee el `.env`. No hay que tocarlo. |
 | `main.py` | El boton de encendido. `python main.py` y ya. |
 
@@ -41,10 +42,10 @@ aqui en una linea.
 flowchart TB
     MAIN["<b>main.py</b><br/>python main.py"]
     ENV[".env"] --> CFG["src/config.py<br/>credenciales y rutas"]
-    SQL["queries/*.sql<br/>4 consultas, grano declarado"]
+    SQL["queries/*.sql<br/>5 consultas, grano declarado"]
     DB[("MySQL · olist")]
     LIMP["src/limpieza.py<br/>reglas traidas del P3"]
-    CSV[("output/*.csv<br/>un CSV por consulta")]
+    CSV[("output/*.csv<br/>4 resumenes + 1 tabla de hechos")]
     XLS["dashboard/Olist_Dashboard.xlsx"]
     STOP(["ETL detenido<br/>no se escribe ningun CSV"])
 
@@ -110,7 +111,8 @@ Como se lee:
 │   ├── clientes_actividad.sql
 │   ├── catalogo_productos.sql
 │   ├── vendedores.sql
-│   └── entregas_retrasos.sql
+│   ├── entregas_retrasos.sql
+│   └── ventas_detalle.sql        tabla de hechos: une las otras cuatro
 │
 ├── notebooks/
 │   └── exploracion.ipynb             banco de pruebas, fuera del proceso automatico
@@ -176,10 +178,11 @@ Salida esperada:
 
 ```
 CSV generados en output/:
-  clientes_actividad       93358 filas   clientes_actividad.csv
+  clientes_actividad       93357 filas   clientes_actividad.csv
   catalogo_productos       32951 filas   catalogo_productos.csv
   vendedores                3095 filas   vendedores.csv
-  entregas_retrasos        96478 filas   entregas_retrasos.csv
+  entregas_retrasos        96470 filas   entregas_retrasos.csv
+  ventas_detalle          110189 filas   ventas_detalle.csv
 ```
 
 Los numeros exactos dependen de vuestra carga; lo que importa es que las cuatro salgan.
@@ -263,6 +266,21 @@ tilde, y 42 coordenadas fuera de Brasil. Si la usais para mapas, ahi si entra
 
 > Una regla de limpieza se justifica con un numero medido, no con un tutorial.
 > La seccion 3 del notebook es para contar el defecto antes de escribir la regla.
+
+---
+
+## El modelo de datos
+
+Las cuatro consultas de resumen **no comparten ninguna clave entre ellas**: una
+va por cliente, otra por producto, otra por vendedor y otra por pedido. Son
+cuatro islas, y con islas no se construye un dashboard cruzado.
+
+Por eso hay una quinta, `ventas_detalle.sql`, al grano de **linea de pedido**:
+es el unico nivel donde coexisten las cuatro claves, asi que es la tabla de
+hechos que las une en un esquema en estrella.
+
+El modelo completo, las cinco relaciones y la regla para no contar dos veces
+estan en [`dashboard/README.md`](dashboard/README.md).
 
 ---
 
