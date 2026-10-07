@@ -31,6 +31,68 @@ El resto del ETL no se toca.
 
 ---
 
+## Arquitectura
+
+Que hace cada fichero y con que conecta. GitHub dibuja esto solo; el codigo del
+diagrama esta en este mismo README, asi que si renombrais un fichero se corrige
+aqui en una linea.
+
+```mermaid
+flowchart TB
+    MAIN["<b>main.py</b><br/>python main.py"]
+    ENV[".env"] --> CFG["src/config.py<br/>credenciales y rutas"]
+    SQL["queries/*.sql<br/>4 consultas, grano declarado"]
+    DB[("MySQL · olist")]
+    LIMP["src/limpieza.py<br/>reglas traidas del P3"]
+    CSV[("output/*.csv<br/>un CSV por consulta")]
+    XLS["dashboard/Olist_Dashboard.xlsx"]
+    STOP(["ETL detenido<br/>no se escribe ningun CSV"])
+
+    MAIN ==> E1
+    CFG --> E1
+    SQL --> E1
+    E1 <--> DB
+
+    subgraph MOTOR["src/olist_ETL.py"]
+        E1["extraer()<br/>lanza el .sql contra MySQL"]
+        E2{{"comprobar_grano()<br/>tras el SQL"}}
+        E3["limpiar()"]
+        E4{{"comprobar_grano()<br/>tras limpiar"}}
+        E5["exportar()"]
+        E1 --> E2 --> E3 --> E4 --> E5
+    end
+
+    LIMP --> E3
+    E2 -.->|no cuadra| STOP
+    E4 -.->|no cuadra| STOP
+    E5 ==> CSV
+    CSV ==>|"Power Query · Actualizar todo"| XLS
+    MAIN -. "al terminar" .-> XLSPY["src/excel.py<br/>crea el libro si no existe"] --> XLS
+    NB["notebooks/exploracion.ipynb<br/>banco de pruebas"] -. "importa las mismas funciones" .-> LIMP
+
+    classDef entrada fill:#ff4700,stroke:#ff4700,color:#ffffff
+    classDef codigo  fill:#ffffff,stroke:#ff4700,stroke-width:2px,color:#000000
+    classDef datos   fill:#ffa37f,stroke:#ff4700,color:#000000
+    classDef control fill:#fff1ea,stroke:#ff4700,stroke-width:2px,color:#000000
+    class MAIN entrada
+    class CFG,LIMP,XLSPY,E1,E3,E5 codigo
+    class SQL,DB,CSV,XLS,ENV datos
+    class E2,E4,STOP control
+    classDef lab fill:#f2f2f2,stroke:#8a8a8a,color:#000000
+    class NB lab
+```
+
+Como se lee:
+
+- **`main.py`** no hace trabajo, lo encarga. Llama a `ejecutar_etl()` y, al terminar, a `src/excel.py`.
+- **La columna central es `src/olist_ETL.py`**, siempre en el mismo orden: extraer, comprobar, limpiar, comprobar, exportar.
+- **Las dos casillas hexagonales son los controles de grano.** Si alguna no cuadra, el proceso se detiene y **no se escribe ningun CSV**: mas vale quedarse sin datos que publicar datos inflados.
+- **Lo que entra por los lados son ficheros vuestros**: las consultas en `queries/`, las reglas en `src/limpieza.py`, las credenciales en `.env`.
+- **El notebook no esta en el camino.** Importa las mismas funciones para probarlas, pero el ETL no lo ejecuta nunca.
+- **La flecha gruesa de `output/*.csv` a Excel es Power Query**, y es la unica union entre el lado automatico y el manual.
+
+---
+
 ## Estructura
 
 ```
