@@ -1,4 +1,6 @@
 -- GRANO: una fila = una linea de pedido entregado (linea_id)
+-- PAPEL: TABLA DE HECHOS. Mide. Es el centro del modelo:
+--         las otras cuatro se unen a ella por su clave.
 --
 -- Esta es la TABLA DE HECHOS del modelo. No agrega nada: order_items ya viene
 -- al grano de linea. Lo que anade son las claves foraneas que permiten

@@ -30,12 +30,17 @@ from src.config import (
 # Si la consulta devuelve mas filas que valores distintos en esa columna,
 # algun JOIN esta multiplicando y el CSV es incorrecto.
 CONSULTAS = {
+    # TABLA DE HECHOS. Mide, y es el centro del modelo.
+    "ventas_detalle": "linea_id",
+
+    # DIMENSIONES. Describen, y se unen al hecho por su clave.
     "clientes_actividad": "customer_unique_id",
     "catalogo_productos": "product_id",
     "vendedores": "seller_id",
+
+    # Segundo hecho, a grano de pedido: mide la entrega.
+    # Un modelo puede tener varios hechos mientras cada uno declare su grano.
     "entregas_retrasos": "order_id",
-    # Tabla de hechos: es la que relaciona a las otras cuatro entre si.
-    "ventas_detalle": "linea_id",
 }
 
 

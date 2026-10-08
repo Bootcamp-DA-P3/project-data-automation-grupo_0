@@ -1,4 +1,6 @@
 -- GRANO: una fila = un cliente unico (customer_unique_id)
+-- PAPEL: dimension. Describe al cliente.
+--         Se une al hecho por customer_unique_id.
 --
 -- customer_id cambia en cada pedido; customer_unique_id es la persona.
 -- Los pagos se agregan por pedido ANTES de unirlos, porque un pedido puede

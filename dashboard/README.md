@@ -95,6 +95,16 @@ flowchart TB
 Eso es un **esquema en estrella**: el hecho en el centro y las descripciones
 alrededor. Es el mismo modelo que rehareis en Power BI en el Proyecto V.
 
+Dos matices que conviene tener claros:
+
+- `entregas_retrasos` hace dos papeles a la vez: es la **tabla de pedidos** para
+  `ventas_detalle`, y a la vez un **segundo hecho** con sus propias medidas
+  (`dias_desvio`, `nota`) al grano de pedido. Eso es legitimo mientras cada tabla
+  declare un solo grano.
+- Si en vez de la columna `categoria` tuvierais una tabla `categorias` aparte,
+  esa rama seria un **copo de nieve**. La consulta `catalogo_productos.sql` la
+  aplana con un `LEFT JOIN` para dejar el modelo en estrella.
+
 ### Crear las relaciones
 
 `Datos` > `Relaciones` > `Nueva`, cinco veces:

@@ -1,4 +1,6 @@
 -- GRANO: una fila = un pedido entregado (order_id)
+-- PAPEL: segundo hecho, a grano de PEDIDO. Mide la entrega.
+--         Tambien hace de dimension del pedido para ventas_detalle.
 --
 -- orders y customers van 1 a 1 (customer_id es clave primaria en customers),
 -- asi que ese JOIN no multiplica. Las resenas si lo harian: se agregan antes.

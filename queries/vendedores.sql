@@ -1,4 +1,6 @@
 -- GRANO: una fila = un vendedor (seller_id)
+-- PAPEL: dimension. Describe al vendedor.
+--         Se une al hecho por seller_id.
 --
 -- Dos agregaciones previas, por el mismo motivo en los dos casos:
 --   venta_por_vendedor: un vendedor tiene muchas lineas en order_items.

@@ -279,6 +279,18 @@ Por eso hay una quinta, `ventas_detalle.sql`, al grano de **linea de pedido**:
 es el unico nivel donde coexisten las cuatro claves, asi que es la tabla de
 hechos que las une en un esquema en estrella.
 
+| Consulta | Papel | Una fila es |
+| :--- | :--- | :--- |
+| `ventas_detalle` | **tabla de hechos** | una linea de pedido |
+| `clientes_actividad` | dimension | un cliente |
+| `catalogo_productos` | dimension | un producto |
+| `vendedores` | dimension | un vendedor |
+| `entregas_retrasos` | segundo hecho, a grano de pedido | un pedido entregado |
+
+El papel de cada una esta escrito en la cabecera de su `.sql`, debajo del grano.
+Un modelo puede tener varios hechos: lo que no puede tener es una tabla que
+mezcle dos granos.
+
 El modelo completo, las cinco relaciones y la regla para no contar dos veces
 estan en [`dashboard/README.md`](dashboard/README.md).
 
